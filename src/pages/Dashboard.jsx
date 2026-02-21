@@ -15,7 +15,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: { staggerChildren: 0.1, delayChildren: 0.1 }
   }
@@ -23,12 +23,12 @@ const containerVariants = {
 
 const cardVariants = {
   hidden: { y: 40, opacity: 0 },
-  visible: { 
-    y: 0, 
+  visible: {
+    y: 0,
     opacity: 1,
     transition: { type: "spring", stiffness: 100 }
   },
-  hover: { 
+  hover: {
     y: -8,
     transition: { duration: 0.3, ease: "easeOut" }
   }
@@ -38,53 +38,53 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const menuItems = [
-    { 
-      title: "Attendance", 
-      subtitle: "Track daily presence", 
-      icon: <PeopleAltTwoToneIcon fontSize="large" />, 
-      path: "/attendance", 
-      color: "#3B82F6" 
+    {
+      title: "Attendance",
+      subtitle: "Track daily presence",
+      icon: <PeopleAltTwoToneIcon fontSize="large" />,
+      path: "/attendance",
+      color: "#3B82F6"
     },
-    { 
-      title: "Results", 
-      subtitle: "Manage student grades", 
-      icon: <AssessmentTwoToneIcon fontSize="large" />, 
-      path: "/results", 
-      color: "#8B5CF6" 
+    {
+      title: "Results",
+      subtitle: "Manage student grades",
+      icon: <AssessmentTwoToneIcon fontSize="large" />,
+      path: "/results",
+      color: "#8B5CF6"
     },
-    { 
-      title: "Notices", 
-      subtitle: "Campus announcements", 
-      icon: <CampaignTwoToneIcon fontSize="large" />, 
-      path: "/notices", 
-      color: "#F59E0B" 
+    {
+      title: "Notices",
+      subtitle: "Campus announcements",
+      icon: <CampaignTwoToneIcon fontSize="large" />,
+      path: "/notices",
+      color: "#F59E0B"
     },
-    { 
-      title: "Reports", 
-      subtitle: "Deep data insights", 
-      icon: <InsightsTwoToneIcon fontSize="large" />, 
-      path: "/reports", 
-      color: "#10B981" 
+    {
+      title: "Reports",
+      subtitle: "Deep data insights",
+      icon: <InsightsTwoToneIcon fontSize="large" />,
+      path: "/reports",
+      color: "#10B981"
     },
-    { 
-      title: "Calendar", 
-      subtitle: "Events & Holidays", 
-      icon: <CalendarMonthTwoToneIcon fontSize="large" />, 
-      path: "/calendar", 
-      color: "#EC4899" 
+    {
+      title: "Calendar",
+      subtitle: "Events & Holidays",
+      icon: <CalendarMonthTwoToneIcon fontSize="large" />,
+      path: "/calendar",
+      color: "#EC4899"
     },
-    { 
-      title: "Time Table", 
-      subtitle: "Weekly Class Schedule", 
-      icon: <AccessTimeTwoToneIcon fontSize="large" />, 
-      path: "/timetable", 
-      color: "#F43F5E" 
+    {
+      title: "Time Table",
+      subtitle: "Weekly Class Schedule",
+      icon: <AccessTimeTwoToneIcon fontSize="large" />,
+      path: "/timetable",
+      color: "#F43F5E"
     },
   ];
 
   return (
-    <Box sx={{ 
-      minHeight: "100vh", 
+    <Box sx={{
+      minHeight: "100vh",
       position: "relative",
       overflow: "hidden", // Prevents scrollbars from background blur
       bgcolor: "#fdfdfd",
@@ -114,12 +114,12 @@ export default function Dashboard() {
       }
     }}>
       <Navbar />
-      
+
       <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 }, position: "relative", zIndex: 1 }}>
-        
+
         {/* Header Section */}
         <Box sx={{ mb: 8, textAlign: 'center' }}>
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
+          {/* <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
             <Box sx={{ 
               display: 'inline-flex', 
               alignItems: 'center', 
@@ -134,13 +134,18 @@ export default function Dashboard() {
                 Management Portal
               </Typography>
             </Box>
-          </motion.div>
+          </motion.div> */}
 
-          <Typography variant="h2" sx={{ fontWeight: 900, color: "#0f172a", mb: 2, letterSpacing: "-1px" }}>
-            Institutional <Box component="span" sx={{ color: 'primary.main' }}>Intelligence</Box>
-          </Typography>
-          <Typography variant="h6" sx={{ color: "#64748b", fontWeight: 400, maxWidth: 600, mx: 'auto' }}>
-            Seamlessly manage your students, staff, and schedules with our next-generation administrative suite.
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 900,
+              color: "#0f172a",
+              mb: 2,
+              letterSpacing: "-1px"
+            }}
+          >
+            BCA Department <Box component="span" sx={{ color: 'primary.main' }}>Admin Portal</Box>
           </Typography>
         </Box>
 
@@ -154,11 +159,11 @@ export default function Dashboard() {
               // sm=6 (2 per row on tablet)
               // md=4 (3 per row on desktop) -> Creates perfect 3x2 grid for 6 items
               <Grid item xs={12} sm={6} md={4} key={item.title} sx={{ display: 'flex' }}>
-                <motion.div 
-                    variants={cardVariants} 
-                    whileHover="hover" 
-                    whileTap={{ scale: 0.97 }} 
-                    style={{ width: "100%", display: "flex" }} // Ensure motion div takes full width/flex
+                <motion.div
+                  variants={cardVariants}
+                  whileHover="hover"
+                  whileTap={{ scale: 0.97 }}
+                  style={{ width: "100%", display: "flex" }} // Ensure motion div takes full width/flex
                 >
                   <Card
                     onClick={() => navigate(item.path)}
@@ -185,9 +190,9 @@ export default function Dashboard() {
                     }}
                   >
                     <Box>
-                      <Box sx={{ 
-                        width: 56, height: 56, 
-                        borderRadius: "18px", 
+                      <Box sx={{
+                        width: 56, height: 56,
+                        borderRadius: "18px",
                         background: `linear-gradient(135deg, ${item.color} 0%, ${alpha(item.color, 0.6)} 100%)`,
                         color: "white",
                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -196,7 +201,7 @@ export default function Dashboard() {
                       }}>
                         {item.icon}
                       </Box>
-                      
+
                       <Typography variant="h5" sx={{ fontWeight: 800, color: "#1e293b", mb: 1 }}>
                         {item.title}
                       </Typography>
@@ -205,12 +210,12 @@ export default function Dashboard() {
                       </Typography>
                     </Box>
 
-                    <Button 
-                      variant="text" 
+                    <Button
+                      variant="text"
                       endIcon={<ArrowForwardRoundedIcon />}
-                      sx={{ 
-                        justifyContent: 'flex-start', 
-                        px: 0, 
+                      sx={{
+                        justifyContent: 'flex-start',
+                        px: 0,
                         color: item.color,
                         fontWeight: 700,
                         "&:hover": { background: 'transparent', letterSpacing: '1px' },
