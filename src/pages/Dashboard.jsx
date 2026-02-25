@@ -1,235 +1,188 @@
-import { Typography, Grid, Card, Box, Container, alpha, Button } from "@mui/material";
+import React from "react";
+import {
+  Typography, Grid, Card, Box, Container, alpha,
+  Avatar, Chip, IconButton
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import Navbar from "../components/Navbar";
 
 // Icons
-import PeopleAltTwoToneIcon from '@mui/icons-material/PeopleAltTwoTone';
-import AssessmentTwoToneIcon from '@mui/icons-material/AssessmentTwoTone';
-import CampaignTwoToneIcon from '@mui/icons-material/CampaignTwoTone';
-import InsightsTwoToneIcon from '@mui/icons-material/InsightsTwoTone';
-import CalendarMonthTwoToneIcon from '@mui/icons-material/CalendarMonthTwoTone';
-import AccessTimeTwoToneIcon from '@mui/icons-material/AccessTimeTwoTone';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
+import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
+import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
+import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
+import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
+import EastRoundedIcon from '@mui/icons-material/EastRounded';
+import WidgetsRoundedIcon from '@mui/icons-material/WidgetsRounded';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-  }
-};
+const menuItems = [
+  { title: "Attendance", subtitle: "Manage student daily records", icon: <GroupRoundedIcon />, path: "/attendance", color: "#0d9488" },
+  { title: "Academic Results", subtitle: "Grade processing & transcripts", icon: <DescriptionRoundedIcon />, path: "/results", color: "#0f766e" },
+  { title: "Notice Board", subtitle: "Broadcast campus updates", icon: <CampaignRoundedIcon />, path: "/notices", color: "#115e59" },
+  { title: "Analytics", subtitle: "Performance & data trends", icon: <BarChartRoundedIcon />, path: "/reports", color: "#134e4a" },
+  { title: "Event Calendar", subtitle: "Schedules & academic terms", icon: <EventAvailableRoundedIcon />, path: "/calendar", color: "#0d9488" },
+  { title: "Time Table", subtitle: "Classroom & faculty allocation", icon: <ScheduleRoundedIcon />, path: "/timetable", color: "#0f766e" },
+];
 
-const cardVariants = {
-  hidden: { y: 40, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100 }
-  },
-  hover: {
-    y: -8,
-    transition: { duration: 0.3, ease: "easeOut" }
-  }
-};
-
-export default function Dashboard() {
+export default function ProfessionalDashboard() {
   const navigate = useNavigate();
 
-  const menuItems = [
-    {
-      title: "Attendance",
-      subtitle: "Track daily presence",
-      icon: <PeopleAltTwoToneIcon fontSize="large" />,
-      path: "/attendance",
-      color: "#3B82F6"
-    },
-    {
-      title: "Results",
-      subtitle: "Manage student grades",
-      icon: <AssessmentTwoToneIcon fontSize="large" />,
-      path: "/results",
-      color: "#8B5CF6"
-    },
-    {
-      title: "Notices",
-      subtitle: "Campus announcements",
-      icon: <CampaignTwoToneIcon fontSize="large" />,
-      path: "/notices",
-      color: "#F59E0B"
-    },
-    {
-      title: "Reports",
-      subtitle: "Deep data insights",
-      icon: <InsightsTwoToneIcon fontSize="large" />,
-      path: "/reports",
-      color: "#10B981"
-    },
-    {
-      title: "Calendar",
-      subtitle: "Events & Holidays",
-      icon: <CalendarMonthTwoToneIcon fontSize="large" />,
-      path: "/calendar",
-      color: "#EC4899"
-    },
-    {
-      title: "Time Table",
-      subtitle: "Weekly Class Schedule",
-      icon: <AccessTimeTwoToneIcon fontSize="large" />,
-      path: "/timetable",
-      color: "#F43F5E"
-    },
-  ];
-
   return (
-    <Box sx={{
-      minHeight: "100vh",
-      position: "relative",
-      overflow: "hidden", // Prevents scrollbars from background blur
-      bgcolor: "#fdfdfd",
-      "&::before": {
-        content: '""',
-        position: "absolute",
-        top: -100,
-        right: -100,
-        width: "500px",
-        height: "500px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(96,165,250,0.15) 0%, rgba(255,255,255,0) 70%)",
-        filter: "blur(60px)",
-        zIndex: 0
-      },
-      "&::after": {
-        content: '""',
-        position: "absolute",
-        bottom: -100,
-        left: -100,
-        width: "600px",
-        height: "600px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(167,139,250,0.1) 0%, rgba(255,255,255,0) 70%)",
-        filter: "blur(80px)",
-        zIndex: 0
-      }
-    }}>
-      <Navbar />
+    <Box sx={{ bgcolor: "#f8fafc", minHeight: "100vh", pb: { xs: 5, md: 10 } }}>
 
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 }, position: "relative", zIndex: 1 }}>
-
-        {/* Header Section */}
-        <Box sx={{ mb: 8, textAlign: 'center' }}>
-          {/* <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
-            <Box sx={{ 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              px: 2, py: 0.5, 
-              mb: 2, 
-              borderRadius: 5, 
-              bgcolor: alpha("#3B82F6", 0.1), 
-              color: "#3B82F6" 
-            }}>
-              <AutoAwesomeIcon sx={{ fontSize: 16, mr: 1 }} />
-              <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
-                Management Portal
+      {/* --- HERO SECTION --- */}
+      <Box sx={{
+        position: 'relative',
+        pt: { xs: 3, md: 5 },
+        pb: { xs: 10, md: 15 },
+        px: { xs: 2, md: 5 },
+        background: 'linear-gradient(135deg, #064e3b 0%, #134e4a 50%, #0f766e 100%)',
+        boxShadow: '0 20px 40px -15px rgba(6, 78, 59, 0.3)',
+        overflow: 'hidden'
+      }}>
+        <Container maxWidth="xl">
+          {/* Responsive Navbar */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 4, md: 8 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ bgcolor: 'rgba(255,255,255,0.12)', p: 1, borderRadius: 2, display: 'flex', backdropFilter: 'blur(8px)' }}>
+                <WidgetsRoundedIcon sx={{ color: 'white', fontSize: { xs: 18, md: 22 } }} />
+              </Box>
+              <Typography sx={{ color: 'white', fontWeight: 900, letterSpacing: { xs: 1, md: 2.5 }, fontSize: { xs: '0.8rem', md: '0.95rem' } }}>
+                BCA.CORE
               </Typography>
             </Box>
-          </motion.div> */}
 
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
+              <IconButton sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.08)' }}>
+                <NotificationsNoneRoundedIcon fontSize="small" />
+              </IconButton>
+              <Avatar
+                onClick={() => navigate("/profile")}
+                sx={{ cursor: "pointer" }}
+              >
+                AD
+              </Avatar>
+            </Box>
+          </Box>
+
+          {/* Large Watermark Text (Hidden on very small screens to prevent layout break) */}
           <Typography
-            variant="h2"
+            variant="h1"
             sx={{
               fontWeight: 900,
-              color: "#0f172a",
-              mb: 2,
-              letterSpacing: "-1px"
+              color: 'rgba(255,255,255,0.04)',
+              position: 'absolute',
+              bottom: -20,
+              left: 40,
+              fontSize: { xs: '4rem', sm: '8rem', md: '12rem' },
+              lineHeight: 1,
+              userSelect: 'none',
+              textTransform: 'uppercase',
+              letterSpacing: { xs: -2, md: -8 },
+              display: { xs: 'none', sm: 'block' }
             }}
           >
-            BCA Department <Box component="span" sx={{ color: 'primary.main' }}>Admin Portal</Box>
+            Management
           </Typography>
-        </Box>
 
-        {/* Dashboard Grid */}
-        <motion.div variants={containerVariants} initial="hidden" animate="visible">
-          {/* Changed spacing to 3 for tighter grid, enabled stretch alignment */}
-          <Grid container spacing={3} alignItems="stretch">
-            {menuItems.map((item) => (
-              // SYSTEMATIC FIX: 
-              // xs=12 (1 per row on mobile)
-              // sm=6 (2 per row on tablet)
-              // md=4 (3 per row on desktop) -> Creates perfect 3x2 grid for 6 items
-              <Grid item xs={12} sm={6} md={4} key={item.title} sx={{ display: 'flex' }}>
-                <motion.div
-                  variants={cardVariants}
-                  whileHover="hover"
-                  whileTap={{ scale: 0.97 }}
-                  style={{ width: "100%", display: "flex" }} // Ensure motion div takes full width/flex
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography variant="h3" sx={{
+              fontWeight: 800,
+              color: "white",
+              mb: 1,
+              letterSpacing: '-0.03em',
+              fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' }
+            }}>
+              Admin <Chip label="v3.0" size="small" sx={{ height: 20, color: 'white', fontWeight: 700, bgcolor: 'rgba(255,255,255,0.15)' }} />
+            </Typography>
+            <Typography sx={{ color: "rgba(255,255,255,0.7)", maxWidth: 500, fontSize: { xs: '0.9rem', md: '1.1rem' } }}>
+              Welcome back. Monitor campus performance and departmental operations.
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* --- CONTENT SECTION --- */}
+      <Container maxWidth="xl" sx={{ mt: { xs: -5, md: -8 }, position: 'relative', zIndex: 2 }}>
+
+        {/* Responsive Quick Stats Grid */}
+        <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: { xs: 4, md: 6 } }}>
+          {[{ l: 'Students', v: '1,240' }, { l: 'Attendance', v: '92%' }, { l: 'Alerts', v: '3' }].map((stat, i) => (
+            <Grid item xs={12} sm={4} key={i}>
+              <Box sx={{
+                p: { xs: 2, md: 3.5 },
+                bgcolor: 'white',
+                borderRadius: { xs: 4, md: 6 },
+                border: '1px solid #eef2f6',
+                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.04)',
+                textAlign: 'center'
+              }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5, fontSize: { xs: '0.65rem', md: '0.75rem' } }}>{stat.l}</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', fontSize: { xs: '1.5rem', md: '2.125rem' } }}>{stat.v}</Typography>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+
+        <Typography variant="h6" sx={{ mb: 3.5, fontWeight: 800, color: "#1e293b", display: 'flex', alignItems: 'center', gap: 1, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+          <Box sx={{ width: 6, height: 20, bgcolor: '#0d9488', borderRadius: 1 }} />
+          Departmental Modules
+        </Typography>
+
+        {/* Responsive Module Grid: 1 col on mobile, 2 on tablet, 3 on desktop */}
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+          {menuItems.map((item) => (
+            <Grid item xs={12} sm={6} md={4} key={item.title}>
+              <motion.div
+                whileHover={{ y: -8 }}
+                transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                style={{ height: '100%' }}
+              >
+                <Card
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    height: '100%',
+                    bgcolor: "white",
+                    cursor: "pointer",
+                    borderRadius: { xs: 5, md: 7 },
+                    border: "1px solid #f1f5f9",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.02)",
+                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "&:hover": {
+                      borderColor: item.color,
+                      boxShadow: `0 20px 40px -15px ${alpha(item.color, 0.15)}`,
+                    },
+                  }}
                 >
-                  <Card
-                    onClick={() => navigate(item.path)}
-                    sx={{
-                      p: 4,
-                      width: "100%",
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      cursor: "pointer",
-                      borderRadius: 6,
-                      border: "1px solid",
-                      borderColor: alpha(item.color, 0.1),
-                      background: "rgba(255, 255, 255, 0.8)", // Slightly more opaque to prevent bleed
-                      backdropFilter: "blur(12px)",
-                      boxShadow: `0 4px 20px -5px ${alpha("#000", 0.05)}`,
-                      transition: "all 0.3s ease",
-                      minHeight: "280px", // Enforce a minimum height for uniformity
-                      "&:hover": {
-                        boxShadow: `0 25px 50px -12px ${alpha(item.color, 0.25)}`,
-                        borderColor: alpha(item.color, 0.3),
-                        transform: "translateY(-5px)" // CSS hover fallback
-                      },
-                    }}
-                  >
-                    <Box>
-                      <Box sx={{
-                        width: 56, height: 56,
-                        borderRadius: "18px",
-                        background: `linear-gradient(135deg, ${item.color} 0%, ${alpha(item.color, 0.6)} 100%)`,
-                        color: "white",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        mb: 3,
-                        boxShadow: `0 10px 20px -5px ${alpha(item.color, 0.5)}`
-                      }}>
-                        {item.icon}
-                      </Box>
-
-                      <Typography variant="h5" sx={{ fontWeight: 800, color: "#1e293b", mb: 1 }}>
-                        {item.title}
-                      </Typography>
-                      <Typography variant="body1" sx={{ color: "#64748b", mb: 4, lineHeight: 1.6 }}>
-                        {item.subtitle}
-                      </Typography>
+                  <Box sx={{ p: { xs: 3, md: 4.5 } }}>
+                    <Box sx={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: { xs: 50, md: 60 }, height: { xs: 50, md: 60 }, borderRadius: 3,
+                      bgcolor: alpha(item.color, 0.08), color: item.color, mb: { xs: 2, md: 3.5 },
+                      boxShadow: `inset 0 0 0 1px ${alpha(item.color, 0.1)}`
+                    }}>
+                      {React.cloneElement(item.icon, { sx: { fontSize: { xs: 24, md: 32 } } })}
                     </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a", mb: 1, fontSize: { xs: '1rem', md: '1.25rem' } }}>{item.title}</Typography>
+                    <Typography variant="body2" sx={{ color: "#64748b", mb: 3, minHeight: { xs: 'auto', md: '40px' }, lineHeight: 1.5, fontSize: { xs: '0.85rem', md: '0.875rem' } }}>
+                      {item.subtitle}
+                    </Typography>
 
-                    <Button
-                      variant="text"
-                      endIcon={<ArrowForwardRoundedIcon />}
-                      sx={{
-                        justifyContent: 'flex-start',
-                        px: 0,
-                        color: item.color,
-                        fontWeight: 700,
-                        "&:hover": { background: 'transparent', letterSpacing: '1px' },
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      Open Module
-                    </Button>
-                  </Card>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        </motion.div>
+                    <Box sx={{
+                      display: 'flex', alignItems: 'center',
+                      color: item.color, fontWeight: 900, fontSize: '0.75rem',
+                      textTransform: 'uppercase', letterSpacing: 1
+                    }}>
+                      Manage View <EastRoundedIcon sx={{ ml: 1, fontSize: 16 }} />
+                    </Box>
+                  </Box>
+                </Card>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     </Box>
   );
