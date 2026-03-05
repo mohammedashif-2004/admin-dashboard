@@ -1,23 +1,70 @@
 import { useState } from 'react';
-import { 
-  TextField, 
-  Button, 
-  Checkbox, 
-  FormControlLabel, 
-  Typography, 
-  Box, 
-  IconButton, 
-  InputAdornment 
+import {
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Typography,
+  Box,
+  IconButton,
+  InputAdornment,
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { login } from '../services/api';
 
 export default function SplitLoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLogin = async () => {
+    // Basic validation
+    if (!username || !password) {
+      setError('Please enter both username and password.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await login(username, password);
+      const { token, role } = response.data;
+
+      // Store token and role
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('username', username);
+
+      // Navigate based on role
+      if (role === 'SUPER_ADMIN') {
+        navigate('/dashboard');
+      } else if (role === 'CLASS_TEACHER' || role === 'SUBJECT_TEACHER') {
+        navigate('/dashboard');
+      } else {
+        setError('Access denied. This portal is for admin and teachers only.');
+        localStorage.clear();
+      }
+
+    } catch (err) {
+      if (err.response?.status === 500) {
+        setError('Invalid username or password.');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -46,25 +93,24 @@ export default function SplitLoginPage() {
           overflow: 'hidden',
         }}
       >
-        {/* Background abstract shapes */}
         <Box
           sx={{
             position: 'absolute',
             inset: 0,
-            background: 
+            background:
               'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.12) 0%, transparent 40%),' +
               'radial-gradient(circle at 80% 70%, rgba(255,255,255,0.08) 0%, transparent 50%)',
             pointerEvents: 'none',
           }}
         />
 
-        <Typography 
-          variant="h3" 
+        <Typography
+          variant="h3"
           component={motion.h1}
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
-          sx={{ 
+          sx={{
             fontWeight: 800,
             mb: 3,
             background: 'linear-gradient(90deg, #ffffff, #e0e0ff)',
@@ -73,35 +119,34 @@ export default function SplitLoginPage() {
             zIndex: 2,
           }}
         >
-          Welcome Back Admin 
+          Welcome Back Admin
         </Typography>
 
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            maxWidth: 420, 
-            textAlign: 'center', 
+        <Typography
+          variant="body1"
+          sx={{
+            maxWidth: 420,
+            textAlign: 'center',
             opacity: 0.9,
             lineHeight: 1.7,
             zIndex: 2,
           }}
         >
-          We're excited to see you again! Log in to access your dashboard, manage your profile, 
-          and continue your journey with us.
+          We're excited to see you again! Log in to access your dashboard,
+          manage your profile, and continue your journey with us.
         </Typography>
 
-        {/* Decorative floating elements */}
         <Box
           component={motion.div}
-          animate={{ 
+          animate={{
             y: [0, -20, 0],
             rotate: [0, 8, -8, 0],
           }}
-          transition={{ 
-            duration: 12, 
-            repeat: Infinity, 
-            repeatType: "reverse",
-            ease: "easeInOut"
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            repeatType: 'reverse',
+            ease: 'easeInOut',
           }}
           sx={{
             position: 'absolute',
@@ -135,9 +180,9 @@ export default function SplitLoginPage() {
         }}
       >
         <Box sx={{ width: '100%', maxWidth: 420 }}>
-          <Typography 
-            variant="h4" 
-            fontWeight="bold" 
+          <Typography
+            variant="h4"
+            fontWeight="bold"
             gutterBottom
             align="center"
             sx={{ mb: 1, color: '#1e293b' }}
@@ -145,27 +190,37 @@ export default function SplitLoginPage() {
             Admin Login
           </Typography>
 
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
-            align="center" 
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            align="center"
             sx={{ mb: 5 }}
           >
             Enter your credentials to continue
           </Typography>
 
+          {/* Error Alert */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {error}
+            </Alert>
+          )}
+
           <TextField
             fullWidth
-            label="Email / Username"
+            label="Username"
             variant="outlined"
             margin="normal"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <Box sx={{ color: '#64748b' }}>✉</Box>
                 </InputAdornment>
               ),
-              sx: { borderRadius: 2 }
+              sx: { borderRadius: 2 },
             }}
           />
 
@@ -175,6 +230,9 @@ export default function SplitLoginPage() {
             type={showPassword ? 'text' : 'password'}
             variant="outlined"
             margin="normal"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -192,22 +250,22 @@ export default function SplitLoginPage() {
                   </IconButton>
                 </InputAdornment>
               ),
-              sx: { borderRadius: 2 }
+              sx: { borderRadius: 2 },
             }}
           />
 
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               mt: 1,
-              mb: 4 
+              mb: 4,
             }}
           >
             <FormControlLabel
               control={
-                <Checkbox 
+                <Checkbox
                   size="small"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
@@ -217,12 +275,12 @@ export default function SplitLoginPage() {
               label={<Typography variant="body2">Remember me</Typography>}
             />
 
-            <Typography 
-              variant="body2" 
-              color="primary" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              color="primary"
+              sx={{
                 cursor: 'pointer',
-                '&:hover': { textDecoration: 'underline' }
+                '&:hover': { textDecoration: 'underline' },
               }}
               onClick={() => navigate('/forgot-password')}
             >
@@ -234,28 +292,28 @@ export default function SplitLoginPage() {
             fullWidth
             variant="contained"
             size="large"
-            onClick={() => navigate('/dashboard')}
+            onClick={handleLogin}
+            disabled={loading}
             sx={{
               py: 1.6,
               borderRadius: 2,
-              bgcolor: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
               background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
               fontWeight: 600,
               textTransform: 'none',
               fontSize: '1.1rem',
               boxShadow: '0 8px 25px rgba(102, 126, 234, 0.35)',
               '&:hover': {
-                bgcolor: '#5a67d8',
                 transform: 'translateY(-2px)',
                 boxShadow: '0 12px 35px rgba(102, 126, 234, 0.45)',
               },
               transition: 'all 0.3s ease',
             }}
           >
-            Login
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
           </Button>
         </Box>
       </Box>
     </Box>
   );
 }
+
