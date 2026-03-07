@@ -20,4 +20,10 @@ api.interceptors.request.use((config) => {
 export const login = (username, password) =>
   api.post('/api/auth/login', { username, password });
 
+
+// Notice APIs
+export const createNotice = (data) => api.post('/api/teacher/notices', data);
+export const getAllNotices = () => api.get('/api/teacher/notices');
+export const deleteNotice = (id) => api.delete(`/api/teacher/notices/${id}`);
+
 export default api;
