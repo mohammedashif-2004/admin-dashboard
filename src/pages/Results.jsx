@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import Navbar from "../components/Navbar";
+
 import {
   Box,
   Typography,
@@ -57,6 +59,9 @@ export default function ResultsUpload() {
   };
 
   return (
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc" }}>
+          <Navbar />
+
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
         Semester Result Upload
@@ -202,6 +207,7 @@ export default function ResultsUpload() {
           </Button>
         </Stack>
       </TableContainer>
+    </Box>
     </Box>
   );
 }

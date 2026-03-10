@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import {
   Typography, Select, MenuItem, TextField, Table, TableBody,
   TableCell, TableHead, TableRow, Container, Paper, Box, Button,
-  Chip, FormControl, InputLabel, Stack, Dialog, DialogTitle,
+  Chip, FormControl, InputLabel, Stack, Dialog,
   DialogContent, DialogActions, LinearProgress, IconButton, Alert,
   CircularProgress, Avatar,
 } from "@mui/material";
@@ -17,10 +17,20 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import EventNoteRoundedIcon from "@mui/icons-material/EventNoteRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
 
 const yearMap = { FYBCA: 1, SYBCA: 2, TYBCA: 3 };
 const TEAL = "#0d9488";
 const TEAL_DARK = "#0f766e";
+
+// attendance values: true = Present, false = Absent, "DL" = Duty Leave
+const getStatusChip = (status) => {
+  if (status === true)  return { label: "Present",     bgcolor: "#dcfce7", color: "#166534" };
+  if (status === false) return { label: "Absent",      bgcolor: "#fee2e2", color: "#991b1b" };
+  if (status === "DL")  return { label: "Duty Leave",  bgcolor: "#fef9c3", color: "#854d0e" };
+  return null;
+};
 
 export default function Attendance() {
   const [year, setYear] = useState("FYBCA");
@@ -34,13 +44,19 @@ export default function Attendance() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [markingDone, setMarkingDone] = useState(false);
+
+  // Single student edit modal
+  const [editStudent, setEditStudent] = useState(null);
 
   useEffect(() => { fetchStudents(); }, [year, division]);
+  useEffect(() => { setMarkingDone(false); setAttendance({}); }, [year, division, selectedDate]);
 
   const fetchStudents = async () => {
     setLoading(true);
     setError("");
     setAttendance({});
+    setMarkingDone(false);
     try {
       const response = await api.get(`/api/admin/students/division?year=${yearMap[year]}&division=${division}`);
       setStudents(response.data);
@@ -56,12 +72,31 @@ export default function Attendance() {
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === totalStudents - 1;
   const markedCount = Object.keys(attendance).length;
-  const presentCount = Object.values(attendance).filter(Boolean).length;
+  const presentCount = Object.values(attendance).filter((v) => v === true).length;
+  const absentCount = Object.values(attendance).filter((v) => v === false).length;
+  const dutyLeaveCount = Object.values(attendance).filter((v) => v === "DL").length;
 
   const markAttendance = (status) => {
     if (!currentStudent) return;
     setAttendance((prev) => ({ ...prev, [currentStudent.rollNumber]: status }));
-    if (!isLast) setCurrentIndex((prev) => prev + 1);
+    if (isLast) {
+      setMarkingOpen(false);
+      setMarkingDone(true);
+    } else {
+      setCurrentIndex((prev) => prev + 1);
+    }
+  };
+
+  // Edit single student from table row click
+  const handleRowClick = (student) => {
+    if (!markingDone && markedCount === 0) return;
+    setEditStudent(student);
+  };
+
+  const saveEditStudent = (status) => {
+    if (!editStudent) return;
+    setAttendance((prev) => ({ ...prev, [editStudent.rollNumber]: status }));
+    setEditStudent(null);
   };
 
   const saveRecords = async () => {
@@ -73,7 +108,7 @@ export default function Attendance() {
       await api.post("/api/teacher/attendance", {
         year: yearMap[year], division, date: selectedDate, attendance,
       });
-      setSuccess(`Attendance saved! ${presentCount} present, ${markedCount - presentCount} absent.`);
+      setSuccess(`Saved! ${presentCount} present, ${absentCount} absent, ${dutyLeaveCount} duty leave.`);
     } catch {
       setError("Failed to save attendance. Please try again.");
     } finally {
@@ -83,13 +118,16 @@ export default function Attendance() {
 
   const downloadReport = () => {
     if (markedCount === 0) { alert("No attendance marked yet!"); return; }
-    const data = students.map((s) => ({
-      "Roll No": s.rollNumber,
-      "Student Name": s.fullName,
-      "PR Number": s.prNumber,
-      "Year": year, "Division": division, "Date": selectedDate,
-      "Status": attendance[s.rollNumber] === true ? "Present" : attendance[s.rollNumber] === false ? "Absent" : "Not Marked",
-    }));
+    const data = students.map((s) => {
+      const val = attendance[s.rollNumber];
+      return {
+        "Roll No": s.rollNumber,
+        "Student Name": s.fullName,
+        "PR Number": s.prNumber,
+        "Year": year, "Division": division, "Date": selectedDate,
+        "Status": val === true ? "Present" : val === false ? "Absent" : val === "DL" ? "Duty Leave" : "Not Marked",
+      };
+    });
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
@@ -97,6 +135,48 @@ export default function Attendance() {
   };
 
   const progress = totalStudents > 0 ? ((currentIndex + 1) / totalStudents) * 100 : 0;
+
+  // Shared mark buttons used in both modals
+  const MarkButtons = ({ rollKey, onMark }) => {
+    const current = attendance[rollKey];
+    return (
+      <Stack direction="row" spacing={2} justifyContent="center" mt={4} flexWrap="wrap">
+        <Button variant={current === true ? "contained" : "outlined"}
+          startIcon={<CheckCircleRoundedIcon />}
+          onClick={() => onMark(true)} size="large"
+          sx={{
+            minWidth: 140, py: 1.6, borderRadius: 3, fontWeight: 700, textTransform: "none",
+            ...(current === true
+              ? { bgcolor: "#10b981", "&:hover": { bgcolor: "#059669" }, borderColor: "#10b981", color: "white" }
+              : { color: "#10b981", borderColor: "#10b981", "&:hover": { bgcolor: "#f0fdf4" } })
+          }}>
+          Present
+        </Button>
+        <Button variant={current === false ? "contained" : "outlined"}
+          startIcon={<CancelRoundedIcon />}
+          onClick={() => onMark(false)} size="large"
+          sx={{
+            minWidth: 140, py: 1.6, borderRadius: 3, fontWeight: 700, textTransform: "none",
+            ...(current === false
+              ? { bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, borderColor: "#ef4444", color: "white" }
+              : { color: "#ef4444", borderColor: "#ef4444", "&:hover": { bgcolor: "#fef2f2" } })
+          }}>
+          Absent
+        </Button>
+        <Button variant={current === "DL" ? "contained" : "outlined"}
+          startIcon={<BadgeRoundedIcon />}
+          onClick={() => onMark("DL")} size="large"
+          sx={{
+            minWidth: 140, py: 1.6, borderRadius: 3, fontWeight: 700, textTransform: "none",
+            ...(current === "DL"
+              ? { bgcolor: "#eab308", "&:hover": { bgcolor: "#ca8a04" }, borderColor: "#eab308", color: "white" }
+              : { color: "#ca8a04", borderColor: "#eab308", "&:hover": { bgcolor: "#fefce8" } })
+          }}>
+          Duty Leave
+        </Button>
+      </Stack>
+    );
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc" }}>
@@ -108,11 +188,7 @@ export default function Attendance() {
         pt: { xs: 3, md: 5 }, pb: { xs: 8, md: 10 }, px: { xs: 2, md: 5 },
         position: "relative", overflow: "hidden",
       }}>
-        <Box sx={{
-          position: "absolute", inset: 0, opacity: 0.04,
-          backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }} />
+        <Box sx={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
         <Container maxWidth="xl">
           <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems={{ md: "center" }} spacing={3}>
             <Box>
@@ -153,14 +229,12 @@ export default function Attendance() {
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={3}>
           {[
             { label: "Total Students", value: totalStudents, icon: <PeopleAltRoundedIcon />, color: TEAL },
-            { label: "Marked", value: markedCount, icon: <CheckCircleRoundedIcon />, color: "#2563eb" },
             { label: "Present", value: presentCount, icon: <CheckCircleRoundedIcon />, color: "#10b981" },
-            { label: "Absent", value: markedCount - presentCount, icon: <CancelRoundedIcon />, color: "#ef4444" },
+            { label: "Absent", value: absentCount, icon: <CancelRoundedIcon />, color: "#ef4444" },
+            { label: "Duty Leave", value: dutyLeaveCount, icon: <BadgeRoundedIcon />, color: "#eab308" },
           ].map((stat) => (
             <Paper key={stat.label} elevation={0} sx={{ flex: 1, p: 2.5, borderRadius: 4, border: "1px solid #e2e8f0", bgcolor: "white", display: "flex", alignItems: "center", gap: 2 }}>
-              <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, borderRadius: 2.5 }}>
-                {stat.icon}
-              </Avatar>
+              <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, borderRadius: 2.5 }}>{stat.icon}</Avatar>
               <Box>
                 <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{stat.label}</Typography>
                 <Typography variant="h5" fontWeight={900} color="#0f172a">{stat.value}</Typography>
@@ -193,12 +267,21 @@ export default function Attendance() {
             <TextField type="date" size="small" value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               sx={{ width: 180, "& .MuiOutlinedInput-root": { borderRadius: 2 } }} />
-            <Button variant="contained" startIcon={loading ? null : <PlayArrowRoundedIcon />}
-              onClick={() => { setCurrentIndex(0); setMarkingOpen(true); }}
-              disabled={loading || totalStudents === 0}
-              sx={{ bgcolor: "#0f172a", borderRadius: 2.5, textTransform: "none", fontWeight: 700, px: 3, "&:hover": { bgcolor: "#1e293b" } }}>
-              {loading ? <CircularProgress size={20} color="inherit" /> : `Start Marking (${totalStudents} students)`}
-            </Button>
+
+            {!markingDone ? (
+              <Button variant="contained" startIcon={loading ? null : <PlayArrowRoundedIcon />}
+                onClick={() => { setCurrentIndex(0); setMarkingOpen(true); }}
+                disabled={loading || totalStudents === 0}
+                sx={{ bgcolor: "#0f172a", borderRadius: 2.5, textTransform: "none", fontWeight: 700, px: 3, "&:hover": { bgcolor: "#1e293b" } }}>
+                {loading ? <CircularProgress size={20} color="inherit" /> : `Start Marking (${totalStudents} students)`}
+              </Button>
+            ) : (
+              <Button variant="outlined" startIcon={<EditRoundedIcon />}
+                onClick={() => { setCurrentIndex(0); setMarkingOpen(true); }}
+                sx={{ borderColor: TEAL, color: TEAL, borderRadius: 2.5, textTransform: "none", fontWeight: 700, px: 3, "&:hover": { bgcolor: `${TEAL}10` } }}>
+                Edit All
+              </Button>
+            )}
           </Stack>
         </Paper>
 
@@ -207,7 +290,9 @@ export default function Attendance() {
           <Paper elevation={0} sx={{ borderRadius: 4, overflow: "hidden", border: "1px solid #e2e8f0", bgcolor: "white", mb: 4 }}>
             <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9" }}>
               <Typography fontWeight={800} color="#0f172a">Attendance Summary</Typography>
-              <Typography variant="body2" color="text.secondary">{markedCount} of {totalStudents} students marked</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {markedCount} of {totalStudents} marked • Click any row to edit
+              </Typography>
             </Box>
             <Table>
               <TableHead sx={{ bgcolor: "#f8fafc" }}>
@@ -220,24 +305,17 @@ export default function Attendance() {
               <TableBody>
                 {students.map((student) => {
                   const status = attendance[student.rollNumber];
+                  const chip = getStatusChip(status);
                   return (
-                    <TableRow key={student.prNumber} hover sx={{ "&:hover": { bgcolor: "#f8fafc" } }}>
+                    <TableRow key={student.prNumber} hover onClick={() => handleRowClick(student)}
+                      sx={{ cursor: "pointer", "&:hover": { bgcolor: "#f0fdf4" } }}>
                       <TableCell sx={{ fontWeight: 700, color: "#0f172a" }}>{student.rollNumber}</TableCell>
                       <TableCell>{student.fullName}</TableCell>
                       <TableCell sx={{ color: "#64748b", fontFamily: "monospace" }}>{student.prNumber}</TableCell>
                       <TableCell>
-                        {status !== undefined ? (
-                          <Chip
-                            icon={status ? <CheckCircleRoundedIcon style={{ fontSize: 14 }} /> : <CancelRoundedIcon style={{ fontSize: 14 }} />}
-                            label={status ? "Present" : "Absent"}
-                            size="small"
-                            sx={{
-                              bgcolor: status ? "#dcfce7" : "#fee2e2",
-                              color: status ? "#166534" : "#991b1b",
-                              fontWeight: 700, border: "none",
-                              "& .MuiChip-icon": { color: "inherit" }
-                            }}
-                          />
+                        {chip ? (
+                          <Chip label={chip.label} size="small"
+                            sx={{ bgcolor: chip.bgcolor, color: chip.color, fontWeight: 700, border: "none" }} />
                         ) : <Typography variant="body2" color="#cbd5e1">—</Typography>}
                       </TableCell>
                     </TableRow>
@@ -249,12 +327,14 @@ export default function Attendance() {
         )}
       </Container>
 
-      {/* Marking Modal */}
+      {/* ── Main Marking Modal ── */}
       <Dialog open={markingOpen} onClose={() => setMarkingOpen(false)} maxWidth="sm" fullWidth
         PaperProps={{ sx: { borderRadius: 5, overflow: "hidden" } }}>
         <Box sx={{ background: `linear-gradient(135deg, #064e3b, ${TEAL_DARK})`, p: 3 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6" fontWeight={800} color="white">Mark Attendance</Typography>
+            <Typography variant="h6" fontWeight={800} color="white">
+              {markingDone ? "Edit Attendance" : "Mark Attendance"}
+            </Typography>
             <IconButton onClick={() => setMarkingOpen(false)} sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "white" } }}>
               <CloseRoundedIcon />
             </IconButton>
@@ -268,7 +348,7 @@ export default function Attendance() {
 
         <DialogContent sx={{ p: 4 }}>
           {currentStudent && (
-            <Box textAlign="center" py={2}>
+            <Box textAlign="center" py={1}>
               <Avatar sx={{ width: 72, height: 72, bgcolor: `${TEAL}20`, color: TEAL, fontSize: "1.8rem", fontWeight: 900, mx: "auto", mb: 2, borderRadius: 4 }}>
                 {currentStudent.fullName?.charAt(0)}
               </Avatar>
@@ -277,31 +357,7 @@ export default function Attendance() {
                 Roll: {currentStudent.rollNumber} &nbsp;•&nbsp; PR: {currentStudent.prNumber}
               </Typography>
               <Typography variant="caption" sx={{ color: TEAL, fontWeight: 700 }}>{year} – Division {division}</Typography>
-
-              <Stack direction="row" spacing={3} justifyContent="center" mt={5}>
-                <Button variant={attendance[currentStudent.rollNumber] === true ? "contained" : "outlined"}
-                  startIcon={<CheckCircleRoundedIcon />}
-                  onClick={() => markAttendance(true)} size="large"
-                  sx={{
-                    minWidth: 160, py: 1.8, borderRadius: 3, fontWeight: 700, textTransform: "none",
-                    ...(attendance[currentStudent.rollNumber] === true
-                      ? { bgcolor: "#10b981", "&:hover": { bgcolor: "#059669" }, borderColor: "#10b981" }
-                      : { color: "#10b981", borderColor: "#10b981", "&:hover": { bgcolor: "#f0fdf4" } })
-                  }}>
-                  Present
-                </Button>
-                <Button variant={attendance[currentStudent.rollNumber] === false ? "contained" : "outlined"}
-                  startIcon={<CancelRoundedIcon />}
-                  onClick={() => markAttendance(false)} size="large"
-                  sx={{
-                    minWidth: 160, py: 1.8, borderRadius: 3, fontWeight: 700, textTransform: "none",
-                    ...(attendance[currentStudent.rollNumber] === false
-                      ? { bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" }, borderColor: "#ef4444" }
-                      : { color: "#ef4444", borderColor: "#ef4444", "&:hover": { bgcolor: "#fef2f2" } })
-                  }}>
-                  Absent
-                </Button>
-              </Stack>
+              <MarkButtons rollKey={currentStudent.rollNumber} onMark={markAttendance} />
             </Box>
           )}
         </DialogContent>
@@ -314,9 +370,36 @@ export default function Attendance() {
           <Button variant="contained"
             onClick={() => isLast ? setMarkingOpen(false) : setCurrentIndex((p) => p + 1)}
             sx={{ bgcolor: "#0f172a", borderRadius: 2.5, textTransform: "none", fontWeight: 700, flex: 1, py: 1.5, "&:hover": { bgcolor: "#1e293b" } }}>
-            {isLast ? "✓ Finish" : "Next →"}
+            {isLast ? "✓ Done" : "Next →"}
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* ── Single Student Edit Modal ── */}
+      <Dialog open={!!editStudent} onClose={() => setEditStudent(null)} maxWidth="xs" fullWidth
+        PaperProps={{ sx: { borderRadius: 5, overflow: "hidden" } }}>
+        <Box sx={{ background: `linear-gradient(135deg, #064e3b, ${TEAL_DARK})`, p: 3 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" fontWeight={800} color="white">Edit Student</Typography>
+            <IconButton onClick={() => setEditStudent(null)} sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "white" } }}>
+              <CloseRoundedIcon />
+            </IconButton>
+          </Stack>
+        </Box>
+        <DialogContent sx={{ p: 4 }}>
+          {editStudent && (
+            <Box textAlign="center">
+              <Avatar sx={{ width: 64, height: 64, bgcolor: `${TEAL}20`, color: TEAL, fontSize: "1.6rem", fontWeight: 900, mx: "auto", mb: 2, borderRadius: 3 }}>
+                {editStudent.fullName?.charAt(0)}
+              </Avatar>
+              <Typography variant="h6" fontWeight={800} color="#0f172a">{editStudent.fullName}</Typography>
+              <Typography variant="body2" color="text.secondary" mt={0.5}>
+                Roll: {editStudent.rollNumber} &nbsp;•&nbsp; PR: {editStudent.prNumber}
+              </Typography>
+              <MarkButtons rollKey={editStudent.rollNumber} onMark={saveEditStudent} />
+            </Box>
+          )}
+        </DialogContent>
       </Dialog>
     </Box>
   );
